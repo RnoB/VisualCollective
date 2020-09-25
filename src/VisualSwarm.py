@@ -432,7 +432,7 @@ def visModel(N,xMax=10,nPhi=512,v0=1,Vu=-1,Vp=-1,Vz=-1,dVu=.1,dVp=.1,dVz=.1,Vuu=
                 running = False
     if dim == 2:
 
-    Vc,Vs,dPhi  = generateVisualFunction2d(nPhi)
+        Vc,Vs,dPhi  = generateVisualFunction2d(nPhi)
 
     Vup = []
     dU = []
