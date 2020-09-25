@@ -43,7 +43,7 @@ pi2 = math.pi/2.
 # x0 = (x,y,z)
 # output : 
 # r = (rho,theta,phi)
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def cart2sph(x0,dim = 3):
     if dim == 3:
         r = np.zeros(x0.shape)
@@ -75,7 +75,7 @@ def cart2sph(x0,dim = 3):
 # nPhi the resolution of the visual field 
 # output :
 # V the visual field as a Matrix with coordinates (phi,theta)
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def visualField3d(X,U,k,nPhi):
     # define the variables in memory
     phi = np.linspace(-pi,pi,2*nPhi+1)
@@ -154,7 +154,7 @@ def visualField3d(X,U,k,nPhi):
 # output :
 # V the visual field as a line with coordinates (phi)
 
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def visualField2d(X,U,k,nPhi,d=1):
     # define the variables in memory
     phi = np.linspace(-pi,pi,2*nPhi+1)
@@ -228,7 +228,7 @@ def generateVisualFunction(nPhi):
 
     return Vcc,Vcs,Vs,dPhi  
 
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def generateVisualFunction2d(nPhi):
     
     s = 2*nPhi+1
@@ -242,9 +242,8 @@ def generateVisualFunction2d(nPhi):
     return Vc,Vs,dPhi  
 
 #where to save the data
-def pather(expId):
+def pather(expId,path):
 
-    path = 'd:/VisualModel/3d/data/'
     if not os.path.exists(path):
         os.makedirs(path)
     path = path  + expId+ '/'
@@ -262,7 +261,7 @@ def pather(expId):
 #  ref  coordinates system
 # output:
 #  X intial positions of the individuals
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def initPosition(N,xMax,ref = 'cart',dim=3):
     if dim == 3:
         if ref == 'spherical':
@@ -332,7 +331,7 @@ def writeCsv(X,N,U,name,path,writeMode = 0):
 #  Vs  = cos(theta)* sin(theta)
 # dPhi   differential of the anngle of the visual field
 
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def parameterVision(V,dV,Vcc,Vcs,Vs,dPhi):
     Vup=np.zeros((2,3))
     Vup[0,0]=np.sum(V*Vcc*dPhi    *dPhi   )
@@ -344,7 +343,7 @@ def parameterVision(V,dV,Vcc,Vcs,Vs,dPhi):
     return Vup
 
 
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def parameterVision2d(V,dV,Vc,Vs,dPhi):
     Vup=np.zeros((2,2))
 
@@ -356,7 +355,7 @@ def parameterVision2d(V,dV,Vc,Vs,dPhi):
     return Vup
 
 
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def derVis(V):
     dV = np.hstack((V[:,-2:-1],V[:,0:-1]))-np.hstack((V[:,1:],V[:,0:1]))
     dV = np.abs(dV/2.0)
@@ -364,10 +363,10 @@ def derVis(V):
     return dV
 
 # visual Field Model
-@numba.njit(fastmath=True)
+#@numba.njit(fastmath=True)
 def updatePosSpeed(X,U,N,Vu,Vp,Vz,Vuu,Vpp,Vzz,dVu,dVp,dVz,dU,v0,drag,Vcc,Vcs,Vs,dPhi,nPhi,dt):
     for k in range (0,N):
-        V = visualField(X,U,k,nPhi)
+        V = visualField3d(X,U,k,nPhi)
         #dV = abs(np.roll(V,1,axis=1)-np.roll(V,-1,axis=1))/2.0
         dV = derVis(V)
 
@@ -387,7 +386,7 @@ def updatePosSpeed(X,U,N,Vu,Vp,Vz,Vuu,Vpp,Vzz,dVu,dVp,dVz,dU,v0,drag,Vcc,Vcs,Vs,
         X[k,2] = X[k,2]+ U[k,2]*dt;
     return X,U
 
-def visModel(N,xMax=10,nPhi=512,v0=1,Vu=-1,Vp=-1,Vz=-1,dVu=.1,dVp=.1,dVz=.1,Vuu=1,Vpp=2,Vzz=1,drag=.1,dt=.1,tMax = 1e3,expId='test',dims=3,tMax=1e5,dataPath = "./"):
+def visModel(N,xMax=10,nPhi=512,v0=1,Vu=-1,Vp=-1,Vz=-1,dVu=.1,dVp=.1,dVz=.1,Vuu=1,Vpp=2,Vzz=1,drag=.1,dt=.1,tMax = 1e5,expId='test',dims=3,dataPath = "./"):
 
     
     numpy.random.seed(int((time.time()-1520000000)*50))
@@ -400,7 +399,7 @@ def visModel(N,xMax=10,nPhi=512,v0=1,Vu=-1,Vp=-1,Vz=-1,dVu=.1,dVp=.1,dVz=.1,Vuu=
     U = initPosition(N,v0,'cylindrical',dim=dims)
 
     writeCsv(X,N,U,'position.csv',path)
-    if dim == 3:
+    if dims == 3:
         Vcc,Vcs,Vs,dPhi  = generateVisualFunction(nPhi)
 
 
@@ -430,7 +429,7 @@ def visModel(N,xMax=10,nPhi=512,v0=1,Vu=-1,Vp=-1,Vz=-1,dVu=.1,dVp=.1,dVz=.1,Vuu=
 
             if t>tMax:
                 running = False
-    if dim == 2:
+    elif dims == 2:
 
         Vc,Vs,dPhi  = generateVisualFunction2d(nPhi)
 
@@ -441,31 +440,31 @@ def visModel(N,xMax=10,nPhi=512,v0=1,Vu=-1,Vp=-1,Vz=-1,dVu=.1,dVp=.1,dVz=.1,Vuu=
 
         dU.append(np.zeros((1,2)))
 
-    t = 0
+        t = 0
 
-    t0=time.time()
+        t0=time.time()
 
-    while running:
-        for k in range (0,N):
-            V = visualField2d(X,U,k,nPhi)
-            dV = abs(np.roll(V,1)-np.roll(V,-1))
+        while running:
+            for k in range (0,N):
+                V = visualField2d(X,U,k,nPhi)
+                dV = abs(np.roll(V,1)-np.roll(V,-1))
 
-            Vup[k] = parameterVision2d(V,dV,Vc,Vs,dPhi)
-            dU[k][0,0] = (drag * (v0 - U[k,0] )) + Vuu * ( Vu * Vup[k][0,0] + dVu * Vup[k][1,0] ) 
-            dU[k][0,1] =  Vpp * (( Vp * Vup[k][0,1] + dVp * Vup[k][1,1] ));
-            
+                Vup[k] = parameterVision2d(V,dV,Vc,Vs,dPhi)
+                dU[k][0,0] = (drag * (v0 - U[k,0] )) + Vuu * ( Vu * Vup[k][0,0] + dVu * Vup[k][1,0] ) 
+                dU[k][0,1] =  Vpp * (( Vp * Vup[k][0,1] + dVp * Vup[k][1,1] ));
+                
 
-        for k in range (0,N):
+            for k in range (0,N):
 
-            U[k,0] = U[k,0] + dU[k][0,0] *dt;
-            U[k,1] = U[k,1] + dU[k][0,1] *dt;
-            #print('ids : '+str(k)+' vis :'+str(U[k]))
-            X[k,0]=X[k,0]+U[k,0]*np.cos(U[k,1])*dt;
-            X[k,1]=X[k,1]+U[k,0]*np.sin(U[k,1])*dt;
-            
-        t=t+1
-        #print(N)
-        writeCsv(X,N,U,'position.csv',path,writeMode=  1)
+                U[k,0] = U[k,0] + dU[k][0,0] *dt;
+                U[k,1] = U[k,1] + dU[k][0,1] *dt;
+                #print('ids : '+str(k)+' vis :'+str(U[k]))
+                X[k,0]=X[k,0]+U[k,0]*np.cos(U[k,1])*dt;
+                X[k,1]=X[k,1]+U[k,0]*np.sin(U[k,1])*dt;
+                
+            t=t+1
+            #print(N)
+            writeCsv(X,N,U,'position.csv',path,writeMode=  1)
         #if t % 1 == 0:
         
         #    t1=time.time()
